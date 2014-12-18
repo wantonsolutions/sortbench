@@ -5,41 +5,72 @@ import(
 	"fmt"
 	"time"
 	"math/rand"
+	"sort"
 	"strconv"
 )
 const MAX = 100
 const NPL = 25
 const INSERTFASTER = 16
 
+type IntArray []int
+
+func (ia IntArray) Len() int {
+	return len(ia)
+}
+
+func (ia IntArray) Less(i, j int) bool {
+	return ia[i] < ia[j]
+}
+
+func (ia IntArray) Swap (i,j int) {
+	ia[i], ia[j] = ia[j], ia[i]
+}
+
+func (ia IntArray) String() string{
+	str := "["
+	for i, e := range ia {
+		if i > 0{
+			str+= " "
+		}
+		str += fmt.Sprint(e)
+	}
+	return str + "]"
+}
+
 func main(){
 	size,err := strconv.Atoi(os.Args[1])
 	if(err != nil){
 		print("DYING!!!")
-	}
+	}/*
 	stest(size,"quick", quicksort)
 	stest(size,"quwins", qwisort)
 	stest(size,"merge", mergesort)
 	stest(size,"heap", heapsort)
 	stest(size,"insert",insertionsort)
 	stest(size,"select",selectionsort)
+	*/
 	stest(size,"bubble",bubblesort)
 	
 }
 
-func stest(size int,name string, sort func([]int)[]int){
-	var array = make([]int, size, size)
-	array = genRand(array)
+func stest(size int,name string, sort func(sort.Interface)){
+	//should generalize this to create any type
+	array := make([]int, size, size)
+	genRand(array)
+	data := IntArray(array)
+	//genRand may become very large
+	
 	c := make(chan int)
-	//printArray(array)
+	fmt.Println(data.String())
 	start := time.Now()
 	go func() {
-		sort(array)
+		sort(data)
 		c<-1
 	}()
 	<-c
 	finnish := time.Since(start)
 	fmt.Println("Sort: ",name,"\tn: ",size,"\tTime: ",finnish.String())
-	//printArray(array)
+	fmt.Println(data.String(),"\n")
 }
 
 
@@ -233,27 +264,22 @@ func qwisort(array []int) []int{
 	return array
 }
 
-func bubblesort(array []int) []int{
-	length := len(array)
-	for i:=0; i<length; i++{
-		for j :=0 ; j<(length - 1); j++{
-			if array[j] > array[j+1]{
-				tmp := array[j]
-				array[j] = array[j+1]
-				array[j+1] = tmp
+func bubblesort(data sort.Interface){
+	for i:=0; i<data.Len(); i++{
+		for j :=1 ;j<data.Len(); j++{
+			if data.Less(j,j-1){
+				data.Swap(j,j-1)
 			}
 		}
 	}
-	return array
 }
 			
 
-func genRand(array []int) []int{
+func genRand(array IntArray){
 	r := rand.New(rand.NewSource(69))
 	for i:=0; i<len(array); i++{
 		array[i] = r.Int()%MAX
 	}
-	return array
 }
 
 func printArray(array []int) {
