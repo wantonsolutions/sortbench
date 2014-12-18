@@ -42,11 +42,11 @@ func main(){
 	if(err != nil){
 		print("DYING!!!")
 	}/*
-	stest(size,"quick", quicksort)
-	stest(size,"quwins", qwisort)
 	stest(size,"merge", mergesort)
 	stest(size,"heap", heapsort)
 	*/
+	stest(size,"quwins", qwisort)
+	stest(size,"quick", quicksort)
 	stest(size,"select",selectionsort)
 	stest(size,"insert",insertionsort)
 	stest(size,"bubble",bubblesort)
@@ -61,7 +61,7 @@ func stest(size int,name string, sort func(sort.Interface)){
 	//genRand may become very large
 	
 	c := make(chan int)
-	fmt.Println(data.String())
+	//fmt.Println(data.String())
 	start := time.Now()
 	go func() {
 		sort(data)
@@ -70,7 +70,7 @@ func stest(size int,name string, sort func(sort.Interface)){
 	<-c
 	finnish := time.Since(start)
 	fmt.Println("Sort: ",name,"\tn: ",size,"\tTime: ",finnish.String())
-	fmt.Println(data.String(),"\n")
+	//fmt.Println(data.String(),"\n")
 }
 
 
@@ -182,58 +182,51 @@ func merge(array []int) []int{
 }
 
 				
-
-//recursive with call to insertion after min point found
-func quicksort(array []int) []int{
-	front := 0;
-	end := len(array)-1
-	if front >= end{
-		return array
-	}
-	pivot := array[end]
-	swapIndex := front
-	for i:=0;i<end;i++{
-		if array[i]<pivot {
-			tmp := array[i]
-			array[i] = array[swapIndex]
-			array[swapIndex] = tmp
-			swapIndex++
-		}
-	}	
-	tmp := array[end]	//put the pivot back where it belongs
-	array[end] = array[swapIndex]
-	array[swapIndex] = tmp
-	quicksort(array[front:(swapIndex)])
-	quicksort(array[(swapIndex+1):end+1])
-	return array
+func qwisort(data sort.Interface){
+	qwisortH(data, 0, data.Len())
 }
 
-func qwisort(array []int) []int{
-	front := 0;
-	end := len(array)-1
-	if front >= end{
-		return array
+
+
+func qwisortH(data sort.Interface, a int, b int){
+	if a >= b-1{
+		return
 	}
-	if (end - front) < INSERTFASTER{
-		//insertionsort(array)
-		return array
+	if (b - a) < INSERTFASTER{
+		insertionsortH(data,a,b)
+		return
 	}
-	pivot := array[end]
-	swapIndex := front
-	for i:=0;i<end;i++{
-		if array[i]<pivot {
-			tmp := array[i]
-			array[i] = array[swapIndex]
-			array[swapIndex] = tmp
+	swapIndex := a
+	for i:=a;i<b-1;i++{
+		if data.Less(i,b-1){
+			data.Swap(i,swapIndex)
 			swapIndex++
 		}
-	}	
-	tmp := array[end]	//put the pivot back where it belongs
-	array[end] = array[swapIndex]
-	array[swapIndex] = tmp
-	quicksort(array[front:(swapIndex)])
-	quicksort(array[(swapIndex+1):end+1])
-	return array
+	}
+	data.Swap(swapIndex,b-1)
+	qwisortH(data,a,swapIndex)
+	qwisortH(data,swapIndex+1,b)	
+}
+
+//recursive with call to insertion after min point found
+func quicksort(data sort.Interface){
+	quicksortH(data, 0, data.Len())
+}
+
+func quicksortH(data sort.Interface, a int, b int){
+	if a >= b-1{
+		return
+	}
+	swapIndex := a
+	for i:=a;i<b-1;i++{
+		if data.Less(i,b-1){
+			data.Swap(i,swapIndex)
+			swapIndex++
+		}
+	}
+	data.Swap(swapIndex,b-1)
+	quicksortH(data,a,swapIndex)
+	quicksortH(data,swapIndex+1,b)	
 }
 
 func selectionsort(data sort.Interface){
@@ -249,7 +242,11 @@ func selectionsort(data sort.Interface){
 }
 
 func insertionsort(data sort.Interface){
-	for i:=1;i<data.Len();i++{
+	insertionsortH(data,0,data.Len())
+}
+
+func insertionsortH(data sort.Interface, a, b int){
+	for i:=a+1;i<b;i++{
 		for j:=i;data.Less(j,j-1);j--{
 			data.Swap(j,j-1)
 			if j == 1{
