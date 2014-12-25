@@ -43,10 +43,10 @@ func main(){
 		print("DYING!!!")
 	}/*
 	stest(size,"merge", mergesort)
-	stest(size,"heap", heapsort)
 	*/
 	stest(size,"quwins", qwisort)
 	stest(size,"quick", quicksort)
+	stest(size,"heap", heapsort)
 	stest(size,"select",selectionsort)
 	stest(size,"insert",insertionsort)
 	stest(size,"bubble",bubblesort)
@@ -61,7 +61,7 @@ func stest(size int,name string, sort func(sort.Interface)){
 	//genRand may become very large
 	
 	c := make(chan int)
-	//fmt.Println(data.String())
+	fmt.Println(data.String())
 	start := time.Now()
 	go func() {
 		sort(data)
@@ -70,79 +70,43 @@ func stest(size int,name string, sort func(sort.Interface)){
 	<-c
 	finnish := time.Since(start)
 	fmt.Println("Sort: ",name,"\tn: ",size,"\tTime: ",finnish.String())
-	//fmt.Println(data.String(),"\n")
+	fmt.Println(data.String(),"\n")
 }
 
+func heapsort(data sort.Interface){
+	heapsortH(data,0,data.Len(),2)
+}
 
-func heapsort(array []int) []int{
-	children:=2
-	maxHeapify(array, children)
-	for i:=0;i<len(array)-1;i++{
-		tmp:=array[len(array)-1-i]
-		array[len(array)-1-i]=array[0]
-		array[0] = tmp
-		shiftdown(array[0:len(array)-i-1],children)
+func heapsortH(data sort.Interface, a, b, children int){
+	//heapify
+	for i:= (b-1)/2;i>=a;i--{
+		shiftdown(data,i,b,children)
 	}
-	return array
+	for i:=b-1;i>=a;i-- {
+		data.Swap(i,a)
+		shiftdown(data,a,i,children)
+	}
 }
 
-func shiftdown(array []int,children int) []int{
-	node:=0
-	swapped := false
-	swapIndex := node
+func shiftdown(data sort.Interface, a, b, children int){
+	node:=a
+	max:=node
 	for child:=1;child<=children;child++{
-		childnode := node*children + child
-		if childnode >= len(array){
+		childnode:=(node-a)*children +child +a
+		//fmt.Println(child, ",")
+		if childnode>=b{
 			break
 		}
-		if array[node] < array[childnode]{
-			tmp:=array[node]
-			array[node]=array[childnode]
-			array[childnode]=tmp
-			if !swapped {
-				swapIndex = childnode
-				swapped = true
-			}
+		if data.Less(max,childnode){
+			max = childnode
 		}
-		if child == children && swapped{
-			//reset for the next level
-			child = 0
-			swapped = false
-			node = swapIndex
+		if child == children && max > node{
+			child =0
+			data.Swap(node,max)
+			node = max
 		}
 	}
-	return array
-}	
-	
-
-func maxHeapify(array []int, children int) []int{
-	//if the heap has been modifed, it may have broken, reheapify	
-	for heaped:=heapify(array, children, 0);heaped;{
-		heaped=heapify(array, children, 0)
-	}
-	return array
 }
-
-func heapify(array[] int, children int, index int) bool{
-	modified := false
-	for child:=1; child <= children; child++{
-		if children*index + child < len(array){
-			//if any part of the heap is modified retain that
-			if(heapify(array,children,children*index+child)){
-				modified = true
-			}
-		}
-		if (index -1)/children >= 0 && array[index] > array[(index-1)/children]{
-			tmp:= array[(index-1)/children]
-			array[(index-1)/children] = array[index]
-			array[index] = tmp
-			modified = true
-		}
-	}
-	return modified
-}
-
-
 
 func mergesort(array []int) []int{
 	if len(array) <= 1{
@@ -185,8 +149,6 @@ func merge(array []int) []int{
 func qwisort(data sort.Interface){
 	qwisortH(data, 0, data.Len())
 }
-
-
 
 func qwisortH(data sort.Interface, a int, b int){
 	if a >= b-1{
