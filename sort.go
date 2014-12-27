@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"sort"
 	"strconv"
 	"time"
 	"github.com/wantonsolutions/sortbench/stdsort"
+	"github.com/wantonsolutions/sortbench/sortjob"
 )
 
 const MAX = 100
@@ -45,6 +45,9 @@ func (ia IntArray) String() string {
 	return str + "]"
 }
 
+//test defin
+	
+
 //man validates the command line arguments and controls the execution of the sorting algorithms
 func main() {
 	size, err := strconv.Atoi(os.Args[1])
@@ -53,19 +56,25 @@ func main() {
 	} /*
 		stest(size,"merge", mergesort)
 	*/
-	stest(size, "quwins", stdsort.Qwisort)
-	stest(size, "quick", stdsort.Quicksort)
-	stest(size, "heap", stdsort.Heapsort)
-	stest(size, "select", stdsort.Selectionsort)
-	stest(size, "insert", stdsort.Insertionsort)
-	stest(size, "bubble", stdsort.Bubblesort)
+	qwisort := sortjob.New("qwisort",size,stdsort.Qwisort,"random")	
+	quicksort := sortjob.New("quicksort",size,stdsort.Quicksort,"random")	
+	heapsort := sortjob.New("heapsort",size,stdsort.Heapsort,"random")	
+	selectionsort := sortjob.New("selectsort",size,stdsort.Selectionsort,"random")	
+	insertionsort := sortjob.New("insertionsort",size,stdsort.Insertionsort,"random")	
+	bubblesort := sortjob.New("bubblesort",size,stdsort.Bubblesort,"random")	
+	stest(qwisort)
+	stest(quicksort)
+	stest(heapsort)
+	stest(selectionsort)
+	stest(insertionsort)
+	stest(bubblesort)
 
 }
 
 //stest is the sorting test function, which takes a sorting algorithm as an argument and then times the execution of that sorting algorithm
-func stest(size int, name string, sort func(sort.Interface)) {
+func stest(job *sortjob.SortJob) {
 	//should generalize this to create any type
-	array := make([]int, size, size)
+	array := make([]int, job.Size, job.Size)
 	genRand(array)
 	data := IntArray(array)
 	//genRand may become very large
@@ -74,12 +83,12 @@ func stest(size int, name string, sort func(sort.Interface)) {
 	//fmt.Println(data.String())
 	start := time.Now()
 	go func() {
-		sort(data)
+		job.Sort(data)
 		c <- 1
 	}()
 	<-c
 	finnish := time.Since(start)
-	fmt.Println("Sort: ", name, "\tn: ", size, "\tTime: ", finnish.String())
+	fmt.Println("Sort: ", job.Name, "\tn: ", job.Size, "\tTime: ", finnish.String())
 	//fmt.Println(data.String(), "\n")
 }
 
