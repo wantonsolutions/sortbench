@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"time"
 	"github.com/wantonsolutions/sortbench/sortjob"
+	"github.com/wantonsolutions/sortbench/stdsort"
 )
 const MAX = 100
 const NPL = 25
@@ -19,9 +20,15 @@ const NPL = 25
 
 var jobs []*sortjob.SortJob
 var totalJobs int
+var printjobs bool
 
 func Init() {
 	jobs = make([]*sortjob.SortJob,MAX,MAX)
+	printjobs = false
+}
+
+func PrintJobs(){
+	printjobs = true
 }
 
 func AddJob(job *sortjob.SortJob) {
@@ -37,6 +44,18 @@ func Run() {
 		stest(jobs[i])
 	}
 }
+
+func NLgNS(size int, sortType string){
+	AddJob(sortjob.New("qwisort",size,stdsort.Qwisort,sortType))
+	AddJob(sortjob.New("quicksort",size,stdsort.Quicksort,sortType))
+	AddJob(sortjob.New("heapsort",size,stdsort.Heapsort,sortType))
+}
+
+func NSqS(size int, sortType string){
+	AddJob(sortjob.New("selectionsort",size,stdsort.Selectionsort,sortType))
+	AddJob(sortjob.New("insertionsort",size,stdsort.Insertionsort,sortType))
+	AddJob(sortjob.New("bubblesort",size,stdsort.Bubblesort,sortType))
+}
 		
 	
 
@@ -49,7 +68,9 @@ func stest(job *sortjob.SortJob) {
 	//genRand may become very large
 
 	c := make(chan int)
-	//fmt.Println(data.String())
+	if printjobs {
+		fmt.Println(data.String())
+	}
 	start := time.Now()
 	go func() {
 		job.Sort(data)
@@ -58,7 +79,9 @@ func stest(job *sortjob.SortJob) {
 	<-c
 	finnish := time.Since(start)
 	fmt.Println("Sort: ", job.Name, "\tn: ", job.Size, "\tTime: ", finnish.String())
-	//fmt.Println(data.String(), "\n")
+	if printjobs {
+		fmt.Println(data.String(), "\n")
+	}
 }
 
 //genRand creates a collection of random valued integers within an intArrray
